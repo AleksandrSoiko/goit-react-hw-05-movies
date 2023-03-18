@@ -60,3 +60,14 @@ export const FilmWrapper = styled.div`
   display: flex;
   gap: 40px;
 `;
+
+export const BackBtn = styled(Link)`
+  text-decoration: none;
+  padding: 5px;
+  border-radius: 5px;
+  border: 2px solid black;
+  display: block;
+  width: 80px;
+  margin-bottom: 20px;
+  text-align: center;
+`;

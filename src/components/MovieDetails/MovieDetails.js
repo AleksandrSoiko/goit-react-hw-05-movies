@@ -1,5 +1,5 @@
-import { Outlet, useParams } from 'react-router-dom';
-import axios from 'axios';
+import { Outlet, useParams, useLocation } from 'react-router-dom';
+import { Suspense, useRef } from 'react';
 import { Loader } from 'components/Loader/Loader';
 import {
   Container,
@@ -13,36 +13,31 @@ import {
   ButtonWrapper,
   TextContainer,
   FilmWrapper,
+  BackBtn,
 } from './MovieDetails.styled';
 import { useEffect, useState } from 'react';
+import imageValidation from 'func/func';
+import { fetchMovieDetailsInfo } from 'components/serviseAPI/fetchMoviesAPI';
 
-axios.defaults.baseURL = 'https://api.themoviedb.org/3/';
-const KEY = '6a9443e9560321a4e46f64bd6f702be3';
-
-export const MovieDetails = () => {
+const MovieDetails = () => {
   const { id } = useParams();
   const [film, setFilm] = useState(null);
   const [status, setStatus] = useState('idle');
+  const location = useLocation();
+  const backLinkLocationRef = useRef(location.state?.from ?? '/movies');
 
   useEffect(() => {
     const abortController = new AbortController();
-    async function fetchMovieDetailsInfo() {
-      try {
-        const response = await axios.get(
-          `movie/${id}?api_key=${KEY}&language=en-US`,
-          {
-            signal: abortController.signal,
-          }
-        );
-        if (film !== null) return;
-        setFilm(response.data);
-        setStatus('loaded');
-        console.log(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    fetchMovieDetailsInfo();
+    const fetchMovieId = async () => {
+      const results = await fetchMovieDetailsInfo(id, {
+        signal: abortController.signal,
+      });
+
+      if (film !== null) return;
+      if (results) setFilm(results);
+      setStatus('loaded');
+    };
+    fetchMovieId();
     return () => {
       abortController.abort();
     };
@@ -50,17 +45,12 @@ export const MovieDetails = () => {
 
   return (
     <Container>
+      <BackBtn to={backLinkLocationRef.current}>Go back</BackBtn>
       {status === 'idle' && <Loader />}
       {film !== null && (
         <>
           <FilmWrapper>
-            <Poster
-              src={
-                film.poster_path !== null
-                  ? `https://image.tmdb.org/t/p/w300/${film.poster_path}`
-                  : 'https://www.t-design.ru/img/digital_kino/pic_01.jpg'
-              }
-            />
+            <Poster src={imageValidation(film.poster_path, 300)} />
             <TextContainer>
               <FilmName>{film.original_title}</FilmName>
               <Description>
@@ -81,7 +71,11 @@ export const MovieDetails = () => {
           </ButtonWrapper>
         </>
       )}
-      <Outlet />
+      <Suspense>
+        <Outlet />
+      </Suspense>
     </Container>
   );
 };
+
+export default MovieDetails;

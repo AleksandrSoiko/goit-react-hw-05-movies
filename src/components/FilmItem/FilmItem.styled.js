@@ -16,6 +16,7 @@ export const Image = styled.img`
 `;
 export const Title = styled.span`
   padding: 5px;
+  font-size: 14px;
 `;
 export const Button = styled(Link)`
   width: 100px;
@@ -37,3 +38,5 @@ export const Button = styled(Link)`
     color: wheat;
   }
 `;
+
+export const Input = styled.input``;

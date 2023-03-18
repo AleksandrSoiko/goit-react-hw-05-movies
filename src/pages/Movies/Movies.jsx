@@ -1,10 +1,14 @@
+import { SearchMovies } from 'components/SearchMovies/SearchMovies';
+import { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 
-export const Movies = () => {
-  return (
-    <div>
-      <div>Movies</div>
+const Movies = () => (
+  <>
+    <SearchMovies />
+    <Suspense>
       <Outlet />
-    </div>
-  );
-};
+    </Suspense>
+  </>
+);
+
+export default Movies;

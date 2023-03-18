@@ -1,17 +1,16 @@
 import { FilmItem } from 'components/FilmItem/FilmItem';
 import { nanoid } from 'nanoid';
-import axios from 'axios';
 import { Button, List } from './FilmList.styled';
 import { useState, useEffect } from 'react';
 import { Loader } from 'components/Loader/Loader';
-
-axios.defaults.baseURL = 'https://api.themoviedb.org/3/';
-const KEY = '6a9443e9560321a4e46f64bd6f702be3';
+import { useLocation } from 'react-router-dom';
+import { fetchTrendingMovies } from 'components/serviseAPI/fetchMoviesAPI';
 
 export const FilmList = () => {
   const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState('idle');
+  const location = useLocation();
 
   const handleClick = () => {
     setPage(prevPage => {
@@ -21,23 +20,14 @@ export const FilmList = () => {
 
   useEffect(() => {
     const abortController = new AbortController();
-    async function fetchTrendingMovies() {
-      try {
-        const response = await axios.get(
-          `trending/all/day?api_key=${KEY}&page=${page}`,
-          {
-            signal: abortController.signal,
-          }
-        );
-        setData(prevData => {
-          return [...prevData, ...response.data.results];
-        });
-        setStatus('loaded');
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    fetchTrendingMovies();
+    const fetchTrends = async () => {
+      const results = await fetchTrendingMovies(page, {
+        signal: abortController.signal,
+      });
+      if (results) setData(prevData => [...prevData, ...results]);
+      setStatus('loaded');
+    };
+    fetchTrends();
     return () => {
       abortController.abort();
     };
@@ -53,6 +43,8 @@ export const FilmList = () => {
             imageLink={el.poster_path}
             title={el.original_title || el.original_name || el.title}
             id={el.id}
+            to={'movies/'}
+            state={{ from: location }}
           />
         ))}
       </List>
